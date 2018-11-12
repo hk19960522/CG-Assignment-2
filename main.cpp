@@ -27,6 +27,7 @@ Good luck!
 #include <stdlib.h>
 #include <stddef.h> /*for function: offsetof */
 #include <iostream>
+#include <vector>
 #include <math.h>
 #include <string.h>
 #include "../GL/glew.h"
@@ -126,8 +127,9 @@ GLfloat light_pos[] = { 1.1, 1.0, 1.3 };
 GLfloat ball_pos[] = { 0.0, 0.0, 0.0 };
 GLfloat ball_rot[] = { 0.0, 0.0, 0.0 };
 
-GLuint program;
-GLuint phongProgram;
+int program_cnt = 0;
+int program_num = 0;
+GLuint phongProgram, dissloveProgram;
 
 GLuint vboID;
 Vertex *vertexs;
@@ -189,7 +191,12 @@ void init(void)
     GLuint frag = createShader("Shaders/phong.frag", "fragment");
     phongProgram = createProgram(vert, frag);
 
+    vert = createShader("Shaders/disslove.vert", "vertex");
+    frag = createShader("Shaders/disslove.frag", "fragment");
+    dissloveProgram = createProgram(vert, frag);
     
+    
+
     vertexs = (Vertex*)malloc(sizeof(Vertex) * model->numtriangles * 3);
 
     for (int i = 0; i < model->numtriangles; i++) {
@@ -218,21 +225,22 @@ void init(void)
 
 }
 
-void drawModel(GLint program) {
+void phong(GLint program) {
 
     glEnable(GL_TEXTURE_2D);
     glUseProgram(phongProgram);
 
     // ModelView Projection Normal
-    GLfloat MV[16], P[16], N[16];
+    GLfloat MV[16], P[16], G2L[16];
     glGetFloatv(GL_PROJECTION_MATRIX, P);
     glGetFloatv(GL_MODELVIEW_MATRIX, MV);
     glPushMatrix();
-        glTranslatef(-ball_pos[0], -ball_pos[1], -ball_pos[2]);
-        glRotatef(-ball_rot[0], 1, 0, 0);
-        glRotatef(-ball_rot[1], 0, 1, 0);
+        glLoadIdentity();
         glRotatef(-ball_rot[2], 0, 0, 1);
-        glGetFloatv(GL_MODELVIEW_MATRIX, N);
+        glRotatef(-ball_rot[1], 0, 1, 0);
+        glRotatef(-ball_rot[0], 1, 0, 0);
+        glTranslatef(-ball_pos[0], -ball_pos[1], -ball_pos[2]);
+        glGetFloatv(GL_MODELVIEW_MATRIX, G2L);
     glPopMatrix();
 
     // Matrix
@@ -240,10 +248,9 @@ void drawModel(GLint program) {
     glUniformMatrix4fv(loc, 1, GL_FALSE, P);
     loc = glGetUniformLocation(program, "MV");
     glUniformMatrix4fv(loc, 1, GL_FALSE, MV);
-    loc = glGetUniformLocation(program, "N");
-    glUniformMatrix4fv(loc, 1, GL_TRUE, N);
+    loc = glGetUniformLocation(program, "G2L");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, G2L);
     
-
     // Texture
     loc = glGetUniformLocation(program, "Tex");
     glActiveTexture(GL_TEXTURE0 + 0); //GL_TEXTUREi = GL_TEXTURE0 + i
@@ -252,9 +259,7 @@ void drawModel(GLint program) {
 
     // Light
     loc = glGetUniformLocation(program, "light.position");
-    //glUniform3f(loc, light_pos[0] - eyex, light_pos[1] - eyey, light_pos[2] - eyez);
-    //glUniform3fv(loc, 1, light_pos);
-    glUniform3f(loc, light_pos[0] - ball_pos[0], light_pos[1] - ball_pos[1], light_pos[2] - ball_pos[2]);
+    glUniform3fv(loc, 1, light_pos);
     loc = glGetUniformLocation(program, "light.La");
     glUniform3f(loc, 0.2, 0.2, 0.2);
     loc = glGetUniformLocation(program, "light.Ld");
@@ -272,6 +277,10 @@ void drawModel(GLint program) {
     loc = glGetUniformLocation(program, "mat.gloss");
     glUniform1f(loc, 100);
 
+    // Camera
+    loc = glGetUniformLocation(program, "eye");
+    glUniform3f(loc, eyex, eyey, eyez);
+
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, position)));
@@ -281,7 +290,6 @@ void drawModel(GLint program) {
 
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, texcoord)));
-
 
     glDrawArrays(GL_TRIANGLES, 0, model->numtriangles * 3);
 
@@ -326,7 +334,7 @@ void display(void)
         
         
         
-        drawModel(phongProgram);
+        phong(phongProgram);
 	glPopMatrix();
 
 	glutSwapBuffers();
