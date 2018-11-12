@@ -1,0 +1,4 @@
+﻿  main.cpp
+d:\nctu assignment\computer graphics\hw2_release\cg_hw2\main.cpp(33): warning C4067: 未預期的語彙基元，接著前置處理器指示詞 - 必須是新行
+d:\nctu assignment\computer graphics\hw2_release\cg_hw2\main.cpp(195): warning C4018: '<': signed/unsigned 不相符
+  CG_HW2.vcxproj -> D:\NCTU Assignment\Computer Graphics\hw2_release\Debug\CG_HW2.exe
