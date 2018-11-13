@@ -50,5 +50,9 @@
   <ItemGroup>
     <None Include="Shaders\phong.frag" />
     <None Include="Shaders\phong.vert" />
+    <None Include="Shaders\dissolve.frag" />
+    <None Include="Shaders\dissolve.vert" />
+    <None Include="Shaders\ramp.frag" />
+    <None Include="Shaders\ramp.vert" />
   </ItemGroup>
 </Project>

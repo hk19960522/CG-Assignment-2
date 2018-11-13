@@ -129,7 +129,11 @@ GLfloat ball_rot[] = { 0.0, 0.0, 0.0 };
 
 int program_cnt = 0;
 int program_num = 0;
-GLuint phongProgram, dissloveProgram;
+GLuint phongProgram, dissolveProgram, rampProgram;
+
+float timer = 0.0;
+float step = 0.005;
+bool isIncrease = true;
 
 GLuint vboID;
 Vertex *vertexs;
@@ -182,20 +186,20 @@ void init(void)
 
 	// APIs for creating shaders and creating shader programs have been done by TAs
 	// following is an example for creating a shader program using given vertex shader and fragment shader
-	/*
-	GLuint vert = createShader("Shaders/bump.vert", "vertex");
-	GLuint frag = createShader("Shaders/bump.frag", "fragment");
-	GLuint program = createProgram(vert, frag);
-	*/
+
     GLuint vert = createShader("Shaders/phong.vert", "vertex");
     GLuint frag = createShader("Shaders/phong.frag", "fragment");
     phongProgram = createProgram(vert, frag);
 
-    vert = createShader("Shaders/disslove.vert", "vertex");
-    frag = createShader("Shaders/disslove.frag", "fragment");
-    dissloveProgram = createProgram(vert, frag);
+    vert = createShader("Shaders/dissolve.vert", "vertex");
+    frag = createShader("Shaders/dissolve.frag", "fragment");
+    dissolveProgram = createProgram(vert, frag);
+
+    vert = createShader("Shaders/ramp.vert", "vertex");
+    frag = createShader("Shaders/ramp.frag", "fragment");
+    rampProgram = createProgram(vert, frag);
     
-    
+    program_num = 3;
 
     vertexs = (Vertex*)malloc(sizeof(Vertex) * model->numtriangles * 3);
 
@@ -225,10 +229,121 @@ void init(void)
 
 }
 
+void dissolve(GLint program) {
+
+    glEnable(GL_TEXTURE_2D);
+    glUseProgram(program);
+
+    // ModelView Projection Normal
+    GLfloat MV[16], P[16], G2L[16];
+    glGetFloatv(GL_PROJECTION_MATRIX, P);
+    glGetFloatv(GL_MODELVIEW_MATRIX, MV);
+
+    // Matrix
+    GLint loc = glGetUniformLocation(program, "P");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, P);
+    loc = glGetUniformLocation(program, "MV");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, MV);
+
+    // Texture
+    loc = glGetUniformLocation(program, "Tex");
+    glActiveTexture(GL_TEXTURE0 + 0); //GL_TEXTUREi = GL_TEXTURE0 + i
+    glBindTexture(GL_TEXTURE_2D, mainTextureID);
+    glUniform1i(loc, 0);
+    loc = glGetUniformLocation(program, "NoiseTex");
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, noiseTextureID);
+    glUniform1i(loc, 1);
+
+    // Parameterr
+    loc = glGetUniformLocation(program, "dissolveFactor");
+    glUniform1f(loc, timer);
+    loc = glGetUniformLocation(program, "epslion");
+    glUniform1f(loc, 0.1);
+    loc = glGetUniformLocation(program, "edgeColor");
+    glUniform4f(loc, 0.0, 1.0, 1.0, 1.0);
+    //std::cout << timer << std::endl;
+
+    // VBO
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, position)));
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, texcoord)));
+
+    glDrawArrays(GL_TRIANGLES, 0, model->numtriangles * 3);
+
+    glBindTexture(GL_TEXTURE_2D, NULL);
+    glUseProgram(NULL);
+}
+
+void ramp(GLint program) {
+
+    glEnable(GL_TEXTURE_2D);
+    glUseProgram(program);
+
+    // ModelView Projection Normal
+    GLfloat MV[16], P[16], G2L[16];
+    glGetFloatv(GL_PROJECTION_MATRIX, P);
+    glGetFloatv(GL_MODELVIEW_MATRIX, MV);
+    glPushMatrix();
+    glLoadIdentity();
+    glRotatef(-ball_rot[2], 0, 0, 1);
+    glRotatef(-ball_rot[1], 0, 1, 0);
+    glRotatef(-ball_rot[0], 1, 0, 0);
+    glTranslatef(-ball_pos[0], -ball_pos[1], -ball_pos[2]);
+    glGetFloatv(GL_MODELVIEW_MATRIX, G2L);
+    glPopMatrix();
+
+    // Matrix
+    GLint loc = glGetUniformLocation(program, "P");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, P);
+    loc = glGetUniformLocation(program, "MV");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, MV);
+    loc = glGetUniformLocation(program, "G2L");
+    glUniformMatrix4fv(loc, 1, GL_FALSE, G2L);
+
+    // Texture
+    loc = glGetUniformLocation(program, "Tex");
+    glActiveTexture(GL_TEXTURE0 + 0); //GL_TEXTUREi = GL_TEXTURE0 + i
+    glBindTexture(GL_TEXTURE_2D, mainTextureID);
+    glUniform1i(loc, 0);
+    loc = glGetUniformLocation(program, "rampTex");
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, rampTextureID);
+    glUniform1i(loc, 1);
+
+    // Light
+    loc = glGetUniformLocation(program, "lightPos");
+    glUniform3fv(loc, 1, light_pos);
+
+    loc = glGetUniformLocation(program, "step");
+    glUniform1f(loc, 4.0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboID);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, position)));
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, texcoord)));
+
+    glDrawArrays(GL_TRIANGLES, 0, model->numtriangles * 3);
+
+    glBindTexture(GL_TEXTURE_2D, NULL);
+    glUseProgram(NULL);
+}
+
 void phong(GLint program) {
 
     glEnable(GL_TEXTURE_2D);
-    glUseProgram(phongProgram);
+    glUseProgram(program);
 
     // ModelView Projection Normal
     GLfloat MV[16], P[16], G2L[16];
@@ -333,8 +448,24 @@ void display(void)
 	   //glmDraw(model,GLM_TEXTURE);// please delete this line in your final code! It's just a preview of rendered object
         
         
+        switch (program_cnt)
+        {
+        case 0:
+            phong(phongProgram);
+            break;
+        case 1:
+            timer += (isIncrease ? 1 : -1 ) * step;
+            if (timer > 1.0 || timer < 0.0) {
+                timer = max(0.0, min(timer, 1.0));
+                isIncrease = !isIncrease;
+            }
+            dissolve(dissolveProgram);
+            break;
+        case 2:
+            ramp(rampProgram);
+            break;
+        }
         
-        phong(phongProgram);
 	glPopMatrix();
 
 	glutSwapBuffers();
@@ -352,7 +483,9 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 	case 'b'://toggle mode
 	{
-		//you may need to do somting here
+        program_cnt++;
+        program_cnt = program_cnt % program_num;
+        timer = 0.0;
 		break;
 	}
 	case 'd':
