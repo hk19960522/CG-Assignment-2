@@ -22,9 +22,7 @@ float ramp(vec3 light_pos) {
 	vec3 n = normalize(data.normal);
 	vec3 l = normalize(light_pos - data.position);
 	
-	float d = max(0.0, dot(n, l));
-	//d = d * 0.5;
-	d = max(0.01, min(0.99, d));
+	float d = max(0.1, min(0.9, dot(n, l)));
 	return texture2D(rampTex, vec2(d, 0.5)).r;
 
 	d = floor(d * step);
