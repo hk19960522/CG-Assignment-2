@@ -199,7 +199,7 @@ void init(void)
     frag = createShader("Shaders/ramp.frag", "fragment");
     rampProgram = createProgram(vert, frag);
     
-    program_num = 3;
+    program_num = 4;
 
     vertexs = (Vertex*)malloc(sizeof(Vertex) * model->numtriangles * 3);
 
@@ -255,13 +255,14 @@ void dissolve(GLint program) {
     glBindTexture(GL_TEXTURE_2D, noiseTextureID);
     glUniform1i(loc, 1);
 
-    // Parameterr
+    // Parameter
     loc = glGetUniformLocation(program, "dissolveFactor");
     glUniform1f(loc, timer);
     loc = glGetUniformLocation(program, "epslion");
     glUniform1f(loc, 0.1);
     loc = glGetUniformLocation(program, "edgeColor");
     glUniform4f(loc, 0.0, 1.0, 1.0, 1.0);
+
     //std::cout << timer << std::endl;
 
     // VBO
@@ -340,7 +341,7 @@ void ramp(GLint program) {
     glUseProgram(NULL);
 }
 
-void phong(GLint program) {
+void phong(GLint program, bool isBlinn = false) {
 
     glEnable(GL_TEXTURE_2D);
     glUseProgram(program);
@@ -395,6 +396,10 @@ void phong(GLint program) {
     // Camera
     loc = glGetUniformLocation(program, "eye");
     glUniform3f(loc, eyex, eyey, eyez);
+
+    // Parameter
+    loc = glGetUniformLocation(program, "isBlinn");
+    glUniform1i(loc, (isBlinn ? 1 : 0));
 
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
     glEnableVertexAttribArray(0);
@@ -463,6 +468,9 @@ void display(void)
             break;
         case 2:
             ramp(rampProgram);
+            break;
+        case 3:
+            phong(phongProgram, true);
             break;
         }
         
