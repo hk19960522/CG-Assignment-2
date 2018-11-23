@@ -17,7 +17,7 @@ out Data
 
 void main() {
 	gl_Position = P * MV * vec4(pos, 1.0);
-
+	//gl_Position = vec4(pos, 1.0);
 	data.position = pos;
 	data.normal = normal;
 	data.texcoord = tex;

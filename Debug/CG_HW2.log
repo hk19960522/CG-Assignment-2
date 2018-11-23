@@ -1,5 +1,5 @@
 ﻿  main.cpp
-d:\nctu assignment\computer graphics\hw2_release\cg_hw2\main.cpp(34): warning C4067: 未預期的語彙基元，接著前置處理器指示詞 - 必須是新行
-d:\nctu assignment\computer graphics\hw2_release\cg_hw2\main.cpp(206): warning C4018: '<': signed/unsigned 不相符
-d:\nctu assignment\computer graphics\hw2_release\cg_hw2\main.cpp(238): warning C4101: 'G2L': 未參考的區域變數
-  CG_HW2.vcxproj -> D:\NCTU Assignment\Computer Graphics\hw2_release\Debug\CG_HW2.exe
+d:\computer-graphics-assignment\hw2_release\cg_hw2\main.cpp(34): warning C4067: 未預期的語彙基元，接著前置處理器指示詞 - 必須是新行
+d:\computer-graphics-assignment\hw2_release\cg_hw2\main.cpp(206): warning C4018: '<': signed/unsigned 不相符
+d:\computer-graphics-assignment\hw2_release\cg_hw2\main.cpp(247): warning C4101: 'G2L': 未參考的區域變數
+  CG_HW2.vcxproj -> D:\Computer-Graphics-Assignment\hw2_release\Debug\CG_HW2.exe

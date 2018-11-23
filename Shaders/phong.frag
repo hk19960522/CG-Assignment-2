@@ -44,7 +44,7 @@ void phong(vec3 light_pos, vec3 eye, out vec3 ambient, out vec3 diffuse, out vec
 
 
 	if (isBlinn == 1) {
-		vec3 h = normalize((l + v) / 2);
+		vec3 h = normalize(l + v);
 		ambient = light.La * mat.Ka;
  
 		float lDotn = max( dot( l, n ), 0.0 );

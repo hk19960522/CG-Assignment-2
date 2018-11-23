@@ -225,6 +225,15 @@ void init(void)
     glGenBuffers(1, &vboID);
     glBindBuffer(GL_ARRAY_BUFFER, vboID);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * model->numtriangles * 3, vertexs, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, position)));
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, texcoord)));
     
 
 }
@@ -262,19 +271,6 @@ void dissolve(GLint program) {
     glUniform1f(loc, 0.1);
     loc = glGetUniformLocation(program, "edgeColor");
     glUniform4f(loc, 0.0, 1.0, 1.0, 1.0);
-
-    //std::cout << timer << std::endl;
-
-    // VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, position)));
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
-
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, texcoord)));
 
     glDrawArrays(GL_TRIANGLES, 0, model->numtriangles * 3);
 
@@ -324,16 +320,6 @@ void ramp(GLint program) {
 
     loc = glGetUniformLocation(program, "step");
     glUniform1f(loc, 4.0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, position)));
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
-
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, texcoord)));
 
     glDrawArrays(GL_TRIANGLES, 0, model->numtriangles * 3);
 
@@ -400,16 +386,6 @@ void phong(GLint program, bool isBlinn = false) {
     // Parameter
     loc = glGetUniformLocation(program, "isBlinn");
     glUniform1i(loc, (isBlinn ? 1 : 0));
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, position)));
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)(offsetof(Vertex, normal)));
-
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, texcoord)));
 
     glDrawArrays(GL_TRIANGLES, 0, model->numtriangles * 3);
 
